@@ -1,0 +1,405 @@
+# GUÍA DE PRUEBAS PASO A PASO - SISTEMA BARESPE VENTASPRO
+
+## CONFIGURACIÓN INICIAL
+
+### 1. Ejecutar comandos de configuración:
+```bash
+php artisan migrate:fresh --seed
+npm run build
+php artisan serve
+```
+
+### 2. Credenciales iniciales:
+- Admin: admin@barespe.com / password123
+
+---
+
+## PRUEBAS DEL SISTEMA
+
+### PASO 1: ACCESO COMO ADMINISTRADOR
+
+1. Abrir navegador en: http://localhost:8000
+2. Hacer clic en "Log in"
+3. Ingresar credenciales:
+   - Email: admin@barespe.com
+   - Password: password123
+4. Verificar redirección al Dashboard
+5. Confirmar que aparecen todas las opciones del menú:
+   - Gestión de Usuarios
+   - Gestión de Categorías (no disponible para admin)
+   - Gestión de Productos (no disponible para admin)
+   - Gestión de Ventas (no disponible para admin)
+
+### PASO 2: CREAR USUARIOS CON DIFERENTES ROLES
+
+#### 2.1 Crear usuario Secretaria:
+1. Ir a "Gestión de Usuarios" → "Crear Usuario"
+2. Llenar formulario:
+   - Nombre: María Secretaria
+   - Email: secretaria@barespe.com
+   - Contraseña: password123
+   - Confirmar contraseña: password123
+   - Rol: Secre
+3. Hacer clic en "Crear Usuario"
+4. Verificar mensaje de éxito
+5. Verificar que aparece en el listado de usuarios
+
+#### 2.2 Crear usuario Bodega:
+1. Ir a "Crear Usuario"
+2. Llenar formulario:
+   - Nombre: Juan Bodeguero
+   - Email: bodega@barespe.com
+   - Contraseña: password123
+   - Confirmar contraseña: password123
+   - Rol: Bodega
+3. Crear usuario y verificar éxito
+
+#### 2.3 Crear usuario Cajera:
+1. Ir a "Crear Usuario"
+2. Llenar formulario:
+   - Nombre: Ana Cajera
+   - Email: cajera@barespe.com
+   - Contraseña: password123
+   - Confirmar contraseña: password123
+   - Rol: Cajera
+3. Crear usuario y verificar éxito
+
+### PASO 3: PROBAR COMO SECRETARIA
+
+#### 3.1 Cambiar de usuario:
+1. Hacer logout del administrador
+2. Login con: secretaria@barespe.com / password123
+3. Verificar dashboard solo muestra "Gestión de Usuarios"
+
+#### 3.2 Verificar permisos de Secretaria:
+1. Ir a "Ver Usuarios" - debe funcionar
+2. Ir a "Crear Usuario"
+3. Verificar que en el dropdown de roles NO aparece "Admin"
+4. Intentar crear usuario con rol "Admin" (no debería estar disponible)
+
+#### 3.3 Crear usuario adicional como Secretaria:
+1. Crear usuario:
+   - Nombre: Carmen Cajera 2
+   - Email: cajera2@barespe.com
+   - Contraseña: password123
+   - Rol: Cajera
+2. Verificar que se crea exitosamente
+
+#### 3.4 Probar funciones CRUD de usuarios:
+1. En el listado de usuarios, hacer clic en "Editar" de Carmen Cajera 2
+2. Cambiar nombre a: "Carmen Cajera Editada"
+3. Cambiar rol a: "Bodega"
+4. Guardar cambios y verificar actualización en listado
+5. Intentar eliminar un usuario sin ventas (debe funcionar)
+6. Intentar eliminar admin (botón no debe aparecer)
+
+#### 3.5 Verificar restricciones de URL:
+1. Intentar acceder directamente a: http://localhost:8000/categories
+2. Debe mostrar error 403 (Forbidden)
+3. Intentar acceder a: http://localhost:8000/products
+4. Debe mostrar error 403
+5. Intentar acceder a: http://localhost:8000/sales
+6. Debe mostrar error 403
+
+### PASO 4: PROBAR COMO BODEGA
+
+#### 4.1 Cambiar de usuario:
+1. Logout de secretaria
+2. Login con: bodega@barespe.com / password123
+3. Verificar dashboard muestra "Gestión de Categorías" y "Gestión de Productos"
+
+#### 4.2 Gestión de Categorías:
+1. Ir a "Ver Categorías"
+2. Verificar que aparecen las categorías creadas por el seeder:
+   - Bebidas
+   - Comidas Rápidas
+   - Postres
+   - Snacks
+   - Bebidas Alcohólicas
+3. Ir a "Crear Categoría"
+4. Crear nueva categoría:
+   - Nombre: Categoria Prueba
+5. Verificar que aparece en el listado
+
+#### 4.3 Probar CRUD de categorías:
+1. Hacer clic en "Editar" en "Categoria Prueba"
+2. Cambiar nombre a: "Categoria Editada"
+3. Guardar cambios y verificar actualización
+4. Crear otra categoría: "Categoria para Eliminar"
+5. Intentar eliminar "Categoria para Eliminar" (debe funcionar)
+6. Intentar eliminar "Bebidas" (debe dar error por productos asociados)
+
+#### 4.4 Gestión de Productos:
+1. Ir a "Ver Productos"
+2. Verificar que aparecen productos del seeder con sus categorías
+3. Observar el indicador de estado de stock (Disponible/Stock Bajo/Sin Stock)
+4. Verificar estadísticas en la parte superior (Total, Con Stock, Sin Stock, Stock Bajo)
+5. Ir a "Crear Producto"
+6. Crear nuevo producto:
+   - Nombre: Producto de Prueba
+   - Categoría: Categoria Editada
+   - Precio: 5.99
+   - Stock: 10
+7. Verificar que aparece en el listado
+
+#### 4.5 Probar CRUD de productos:
+1. Hacer clic en "Editar" en "Producto de Prueba"
+2. Cambiar precio a: 7.99
+3. Cambiar stock a: 15
+4. Guardar cambios y verificar actualización
+5. Crear producto sin stock: "Producto Sin Stock" (stock: 0)
+6. Intentar eliminar "Producto Sin Stock" (debe funcionar)
+7. Intentar eliminar productos con ventas (debe dar error)
+
+#### 4.6 Verificar restricciones:
+1. Intentar acceder a: http://localhost:8000/users
+2. Debe mostrar error 403
+3. Intentar acceder a: http://localhost:8000/sales
+4. Debe mostrar error 403
+
+### PASO 5: PROBAR COMO CAJERA
+
+#### 5.1 Cambiar de usuario:
+1. Logout de bodega
+2. Login con: cajera@barespe.com / password123
+3. Verificar dashboard muestra solo "Gestión de Ventas"
+
+#### 5.2 Ver historial de ventas (vacío):
+1. Ir a "Ver Mis Ventas"
+2. Verificar que no hay ventas registradas
+3. Observar los contadores en 0:
+   - Total Ventas: 0
+   - Ingresos Totales: $0.00
+   - Ventas Hoy: 0
+   - Promedio Venta: $0.00
+
+#### 5.3 Registrar primera venta:
+1. Ir a "Registrar Venta"
+2. Verificar información del cajero y fecha
+3. Seleccionar producto: "Coca Cola 350ml"
+4. Verificar que aparece información del producto:
+   - Categoría: Bebidas
+   - Precio unitario: $2.50
+   - Stock disponible: 50 unidades
+5. Cambiar cantidad a: 3
+6. Verificar cálculo automático:
+   - Precio unitario: $2.50
+   - Cantidad: 3 unidades
+   - Total: $7.50
+7. Verificar mensaje: "Quedarán 47 unidades"
+8. Hacer clic en "Registrar Venta"
+9. Verificar redirección y mensaje de éxito
+
+#### 5.4 Registrar segunda venta:
+1. Ir a "Registrar Venta"
+2. Seleccionar: "Hamburguesa Clásica"
+3. Cantidad: 1
+4. Verificar total: $8.50
+5. Registrar venta
+
+#### 5.5 Registrar tercera venta:
+1. Seleccionar: "Doritos"
+2. Cantidad: 5
+3. Verificar total: $10.00
+4. Registrar venta
+
+#### 5.6 Verificar historial actualizado:
+1. Ir a "Ver Mis Ventas"
+2. Verificar contadores actualizados:
+   - Total Ventas: 3
+   - Ingresos Totales: $26.00
+   - Ventas Hoy: 3
+3. Verificar que aparecen las 3 ventas con detalles correctos
+4. Verificar que solo aparecen botones "Editar" y "Eliminar" en ventas del día
+
+#### 5.7 Probar CRUD de ventas (solo del día actual):
+1. Hacer clic en "Editar" en la primera venta
+2. Cambiar producto a: "Pepsi 350ml"
+3. Cambiar cantidad a: 2
+4. Verificar cálculos automáticos y stock disponible
+5. Guardar cambios y verificar actualización en historial
+6. Eliminar una venta haciendo clic en "Eliminar"
+7. Confirmar eliminación y verificar que el stock se restaura
+
+#### 5.8 Probar restricciones de stock:
+1. Ir a "Registrar Venta"
+2. Seleccionar producto con stock bajo: "Vino Tinto" (stock: 5)
+3. Intentar cantidad: 10
+4. Verificar que se ajusta automáticamente a 5
+5. Verificar mensaje: "Solo hay 5 unidades disponibles"
+6. Cambiar cantidad a 5
+7. Verificar mensaje: "Se agotará el stock con esta venta"
+8. Registrar venta
+
+#### 5.9 Verificar productos sin stock:
+1. Ir a "Registrar Venta"
+2. Verificar que "Cerveza Pilsener" NO aparece en la lista (stock: 0)
+
+### PASO 6: PROBAR SEGUNDA CAJERA
+
+#### 6.1 Cambiar de usuario:
+1. Logout de primera cajera
+2. Login con: cajera2@barespe.com / password123
+
+#### 6.2 Verificar aislamiento de datos:
+1. Ir a "Ver Mis Ventas"
+2. Verificar que no aparecen las ventas de la primera cajera
+3. Contadores en 0
+
+#### 6.3 Registrar ventas de segunda cajera:
+1. Registrar venta: "Pepsi 350ml" x 2
+2. Registrar venta: "Hot Dog" x 1
+3. Verificar que solo aparecen sus ventas
+4. Probar editar una de sus ventas
+5. Verificar que no puede editar ventas de otra cajera
+
+### PASO 7: VERIFICAR SEGURIDAD DE URLS
+
+#### 7.1 Como Cajera, probar acceso directo:
+1. En la barra de direcciones, ir a: http://localhost:8000/users
+2. Verificar error 403: "No tienes permisos para acceder a esta sección"
+3. Probar: http://localhost:8000/categories → Error 403
+4. Probar: http://localhost:8000/products → Error 403
+
+#### 7.2 Como Bodega, probar acceso directo:
+1. Login como bodega
+2. Probar: http://localhost:8000/users → Error 403
+3. Probar: http://localhost:8000/sales → Error 403
+
+### PASO 8: VERIFICAR COMO ADMINISTRADOR
+
+#### 8.1 Acceso completo:
+1. Login como admin
+2. Verificar acceso a todas las secciones de usuarios
+3. Ir a "Ver Usuarios" - ver todos los usuarios creados
+4. Verificar roles asignados correctamente
+
+#### 8.2 Probar CRUD completo de usuarios como admin:
+1. Editar cualquier usuario (incluso secre)
+2. Cambiar roles sin restricciones
+3. Eliminar usuarios (excepto a sí mismo)
+4. Crear usuarios con cualquier rol
+
+#### 8.3 Verificar datos del sistema:
+1. Como admin, no puede acceder directamente a categorías/productos/ventas
+2. Pero puede crear usuarios que sí tengan esos permisos
+
+### PASO 9: PRUEBAS DE VALIDACIÓN
+
+#### 9.1 Validaciones de usuarios:
+1. Como admin, intentar crear usuario con email duplicado
+2. Intentar crear usuario con contraseña corta
+3. Intentar crear usuario sin confirmar contraseña
+4. Intentar editar con email ya existente
+
+#### 9.2 Validaciones de categorías:
+1. Como bodega, intentar crear categoría con nombre duplicado
+2. Intentar crear categoría con nombre vacío
+3. Intentar editar con nombre duplicado
+
+#### 9.3 Validaciones de productos:
+1. Como bodega, intentar crear producto sin categoría
+2. Intentar crear producto con precio negativo
+3. Intentar crear producto con stock negativo
+4. Intentar editar con valores inválidos
+
+#### 9.4 Validaciones de ventas:
+1. Como cajera, intentar registrar venta sin producto
+2. Intentar cantidad 0 o negativa
+3. Intentar editar venta de otro día (no debe permitir)
+4. Intentar editar venta de otra cajera (error 403)
+
+### PASO 10: VERIFICAR FUNCIONALIDADES DINÁMICAS
+
+#### 10.1 En registro de ventas:
+1. Seleccionar producto
+2. Verificar que información aparece automáticamente
+3. Cambiar cantidad y ver cálculo en tiempo real
+4. Cambiar producto y verificar actualización de datos
+5. Verificar que botón se habilita/deshabilita según corresponda
+
+#### 10.2 En edición de ventas:
+1. Verificar cálculos automáticos al cambiar producto/cantidad
+2. Verificar mensajes de stock dinámicos
+3. Verificar comparación de precios (original vs actual)
+4. Verificar restauración y decrementación de stock
+
+#### 10.3 Verificar stock en tiempo real:
+1. Como cajera, registrar venta que agote un producto
+2. Como bodega, verificar que stock se actualizó en listado
+3. Como otra cajera, verificar que producto ya no aparece disponible
+4. Editar venta para cambiar producto y verificar stock se restaura/actualiza
+
+### PASO 11: PRUEBAS AVANZADAS DE INTEGRIDAD
+
+#### 11.1 Restricciones de eliminación:
+1. Como bodega, intentar eliminar categoría con productos asociados
+2. Intentar eliminar producto con ventas registradas
+3. Como admin/secre, intentar eliminar usuario con ventas registradas
+
+#### 11.2 Restricciones temporales:
+1. Intentar editar venta de día anterior (simular cambiando fecha del sistema)
+2. Verificar que solo ventas del día actual son editables
+3. Verificar mensajes informativos sobre restricciones
+
+#### 11.3 Control de stock avanzado:
+1. Editar venta cambiando a producto con stock insuficiente
+2. Verificar cálculo correcto de stock disponible en edición
+3. Eliminar venta y verificar restauración de stock
+
+---
+
+## RESULTADOS ESPERADOS
+
+### Roles funcionando correctamente:
+- ✅ Admin: puede crear/editar/eliminar cualquier usuario
+- ✅ Secre: puede crear/editar/eliminar usuarios excepto admin
+- ✅ Bodega: puede gestionar CRUD completo de categorías y productos
+- ✅ Cajera: puede gestionar CRUD completo de ventas (limitado a día actual)
+
+### Seguridad implementada:
+- ✅ URLs protegidas por middleware
+- ✅ Acceso restringido según roles
+- ✅ Validaciones en formularios
+- ✅ Control de stock en ventas
+- ✅ Restricciones de eliminación por integridad de datos
+- ✅ Restricciones temporales en edición de ventas
+
+### Funcionalidades dinámicas:
+- ✅ Cálculo automático de totales
+- ✅ Verificación de stock en tiempo real
+- ✅ Actualización automática de inventario
+- ✅ Interfaz responsive y amigable
+- ✅ Gestión inteligente de stock en ediciones
+- ✅ Validaciones client-side y server-side
+
+### Funcionalidades CRUD completas:
+- ✅ Usuarios: Create, Read, Update, Delete (con restricciones)
+- ✅ Categorías: Create, Read, Update, Delete (con validación de productos)
+- ✅ Productos: Create, Read, Update, Delete (con validación de ventas)
+- ✅ Ventas: Create, Read, Update, Delete (con restricciones temporales)
+
+---
+
+## CREDENCIALES FINALES PARA PRUEBAS
+
+- Admin: admin@barespe.com / password123
+- Secretaria: secretaria@barespe.com / password123
+- Bodega: bodega@barespe.com / password123
+- Cajera: cajera@barespe.com / password123
+- Cajera 2: cajera2@barespe.com / password123
+
+---
+
+## NOTAS IMPORTANTES
+
+1. Cada vez que se ejecute `php artisan migrate:fresh --seed` se resetearán todos los datos
+2. Las ventas se registran con el stock disponible al momento de la venta
+3. Cada cajera solo ve sus propias ventas
+4. Los roles están protegidos a nivel de middleware y controlador
+5. El sistema incluye validaciones tanto frontend como backend
+6. **NUEVO**: Funcionalidades CRUD completas implementadas con restricciones de seguridad
+7. **NUEVO**: Solo se pueden editar/eliminar ventas del día actual
+8. **NUEVO**: El stock se gestiona inteligentemente en ediciones y eliminaciones
+9. **NUEVO**: Restricciones de eliminación para mantener integridad de datos
+10. **NUEVO**: Interfaces dinámicas con cálculos automáticos y validaciones en tiempo real

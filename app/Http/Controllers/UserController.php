@@ -390,4 +390,14 @@ class UserController extends Controller
     {
         return $this->canDeleteUser($targetUser);
     }
+
+    public function crearTokenAcceso(User $user)
+    {
+        $token = $user->createToken('API Token')->plainTextToken;
+
+        // Guardar el token en la sesión como mensaje flash
+        session()->flash('token_message', "Token de acceso generado: {$token} para el usuario {$user->name}");
+
+        return redirect()->route('users.index');
+    }
 }

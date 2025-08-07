@@ -69,6 +69,47 @@
                             </div>
                         </div>
                     @endif
+
+                    {{-- Herramientas de Administración (solo admin) --}}
+                    @if(auth()->user()->hasRole('admin'))
+                        <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                            <h4 class="font-semibold text-gray-800 mb-3">🔧 Herramientas de Administración</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <a href="{{ url('/telescope') }}" 
+                                   class="flex items-center p-3 bg-indigo-100 hover:bg-indigo-200 rounded-lg border border-indigo-300 transition-colors duration-200"
+                                   target="_blank">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-white text-sm font-bold">T</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-indigo-800">Laravel Telescope</div>
+                                        <div class="text-sm text-indigo-600">Monitoreo y debugging</div>
+                                    </div>
+                                </a>
+                                
+                                <a href="{{ route('activity-logs.index') }}" 
+                                   class="flex items-center p-3 bg-orange-100 hover:bg-orange-200 rounded-lg border border-orange-300 transition-colors duration-200">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-white text-sm font-bold">📊</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-orange-800">Logs de Actividad</div>
+                                        <div class="text-sm text-orange-600">Auditoría del sistema</div>
+                                    </div>
+                                </a>
+                                
+                                <div class="flex items-center p-3 bg-red-100 rounded-lg border border-red-300">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-white text-sm font-bold">⚠️</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-red-800">Sistema Seguro</div>
+                                        <div class="text-sm text-red-600">Acceso restringido</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     
                     {{-- Menú de navegación según roles --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

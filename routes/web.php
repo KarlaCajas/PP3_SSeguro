@@ -50,6 +50,9 @@ Route::middleware(['auth', 'check.user.status'])->group(function () {
         Route::get('/users/trash', [UserController::class, 'trash'])->name('users.trash');
         Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
         Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('users.force-delete');
+
+        // Crear token de API
+        Route::get('/users/{user}/token', [UserController::class, 'crearTokenAcceso'])->name('users.crearTokenAcceso');
     });
 
     /**

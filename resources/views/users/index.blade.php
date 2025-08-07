@@ -50,6 +50,11 @@
 
                     {{-- Tabla de usuarios --}}
                     <div class="overflow-x-auto">
+                        @if(session('token_message'))
+                            <div class="mt-2 text-sm text-gray-600">
+                                {{ session('token_message') }}
+                            </div>
+                        @endif
                         <table class="min-w-full table-auto">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -166,6 +171,11 @@
                                                     @endif
                                                 @endif
                                             </div>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('users.crearTokenAcceso', $user) }}">
+                                                crear token de acceso
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty

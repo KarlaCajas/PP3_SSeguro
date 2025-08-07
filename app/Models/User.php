@@ -11,10 +11,11 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, SoftDeletes, LogsActivity;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, LogsActivity, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.

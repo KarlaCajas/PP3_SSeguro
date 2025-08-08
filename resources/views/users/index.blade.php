@@ -55,6 +55,49 @@
                                 {{ session('token_message') }}
                             </div>
                         @endif
+
+                        {{-- Mostrar token Sanctum generado --}}
+                        @if(session('api_token'))
+                            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <h3 class="text-lg font-semibold text-blue-800 mb-2">🔑 Token Sanctum Generado (Seguro - Hasheado)</h3>
+                                <p class="text-sm text-blue-700 mb-3">
+                                    Copia este token ahora, no se volverá a mostrar:
+                                </p>
+                                <div class="flex items-center space-x-2">
+                                    <input type="text" 
+                                           id="sanctum-token" 
+                                           value="{{ session('api_token') }}" 
+                                           readonly 
+                                           class="flex-1 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm font-mono text-blue-800">
+                                    <button onclick="copiarToken('sanctum-token')" 
+                                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                        📋 Copiar
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Mostrar token en texto plano generado --}}
+                        @if(session('plain_text_token'))
+                            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <h3 class="text-lg font-semibold text-red-800 mb-2">⚠️ Token en Texto Plano Generado (INSEGURO)</h3>
+                                <p class="text-sm text-red-700 mb-3">
+                                    <strong>ADVERTENCIA:</strong> Este token se almacena en texto plano y es inseguro. Solo para desarrollo/educación:
+                                </p>
+                                <div class="flex items-center space-x-2">
+                                    <input type="text" 
+                                           id="plain-text-token" 
+                                           value="{{ session('plain_text_token') }}" 
+                                           readonly 
+                                           class="flex-1 px-3 py-2 bg-white border border-red-300 rounded-md text-sm font-mono text-red-800">
+                                    <button onclick="copiarToken('plain-text-token')" 
+                                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm">
+                                        📋 Copiar
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+
                         <table class="min-w-full table-auto">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -264,6 +307,29 @@
             const modal = document.getElementById('deleteModal');
             if (event.target == modal) {
                 closeDeleteModal();
+            }
+        }
+
+        // Función para copiar tokens
+        function copiarToken(inputId) {
+            const input = document.getElementById(inputId);
+            input.select();
+            input.setSelectionRange(0, 99999); // Para dispositivos móviles
+            
+            try {
+                document.execCommand('copy');
+                // Mostrar confirmación
+                const button = input.nextElementSibling;
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Copiado';
+                button.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('bg-green-600');
+                }, 2000);
+            } catch (err) {
+                alert('Error al copiar el token');
             }
         }
     </script>

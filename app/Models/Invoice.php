@@ -99,6 +99,14 @@ class Invoice extends Model
     }
 
     /**
+     * Relación: La factura tiene muchos pagos
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
      * Scope: Facturas activas
      */
     public function scopeActive($query)
@@ -209,5 +217,37 @@ class Invoice extends Model
     public function getCalculatedTotal(): float
     {
         return $this->items->sum('total_price');
+    }
+
+    /**
+     * Verificar si está pagada
+     */
+    public function isPaid(): bool
+    {
+        return $this->status === 'paid';
+    }
+
+    /**
+     * Verificar si está pendiente de pago
+     */
+    public function isPending(): bool
+    {
+        return $this->status === 'pending' || $this->status === 'active';
+    }
+
+    /**
+     * Obtener el total de pagos aprobados
+     */
+    public function getTotalPagosAprobados(): float
+    {
+        return $this->payments()->where('estado', 'aprobado')->sum('monto');
+    }
+
+    /**
+     * Verificar si tiene pagos pendientes
+     */
+    public function hasPagosPendientes(): bool
+    {
+        return $this->payments()->where('estado', 'pendiente')->exists();
     }
 }

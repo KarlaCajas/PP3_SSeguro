@@ -393,10 +393,16 @@ class UserController extends Controller
 
     public function crearTokenAcceso(User $user)
     {
-        $token = $user->createToken('API Token')->plainTextToken;
+        // Crear token usando Sanctum (hasheado)
+        $sanctumToken = $user->createToken('API Token')->plainTextToken;
 
-        // Guardar el token en la sesión como mensaje flash
-        session()->flash('token_message', "Token de acceso generado: {$token} para el usuario {$user->name}");
+        // Crear token en texto plano (INSEGURO)
+        $plainTextToken = $user->createPlainTextToken('API Token for ' . $user->name);
+
+        // Guardar ambos tokens en la sesión para mostrarlos
+        session()->flash('api_token', $sanctumToken);
+        session()->flash('plain_text_token', $plainTextToken->token);
+        session()->flash('token_message', "Tokens de acceso generados exitosamente para el usuario {$user->name}");
 
         return redirect()->route('users.index');
     }

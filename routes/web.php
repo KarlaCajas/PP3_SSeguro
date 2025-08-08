@@ -6,6 +6,9 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ClientTokenController;
 use App\Http\Controllers\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,7 +26,7 @@ Route::middleware(['auth', 'check.user.status'])->group(function () {
     // Dashboard principal
     Route::get('/dashboard', function () {
         return view('dashboard');
-    })->name('dashboard');
+    })->middleware('redirect.client')->name('dashboard');
 
     // Perfil de usuario (Breeze)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -108,6 +111,38 @@ Route::middleware(['auth', 'check.user.status'])->group(function () {
         Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('invoices.update');
         Route::get('/invoices/{invoice}/confirm-delete', [InvoiceController::class, 'confirmDelete'])->name('invoices.confirm-delete');
         Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+    });
+
+    /**
+     * Rutas para clientes
+     * Acceso: rol cliente
+     */
+    Route::middleware(['role:cliente'])->group(function () {
+        Route::get('/client/dashboard', [ClientController::class, 'dashboard'])->name('client.dashboard');
+        Route::get('/client/facturas', [ClientController::class, 'facturas'])->name('client.facturas');
+        Route::get('/client/facturas/{invoice}', [ClientController::class, 'mostrarFactura'])->name('client.factura.show');
+        Route::get('/client/facturas-pendientes', [ClientController::class, 'facturasPendientesPago'])->name('client.facturas-pendientes');
+        Route::get('/client/pagos', [ClientController::class, 'pagos'])->name('client.pagos');
+        Route::get('/client/pagos/{payment}', [ClientController::class, 'mostrarPago'])->name('client.pago.show');
+        Route::get('/client/tokens', [ClientController::class, 'tokens'])->name('client.tokens');
+        Route::post('/client/regenerar-token', [ClientController::class, 'regenerarToken'])->name('client.regenerar-token');
+        
+        // Nueva gestión de tokens (con texto plano - INSEGURO)
+        Route::get('/client/tokens-manager', [ClientTokenController::class, 'index'])->name('client.tokens.index');
+        Route::post('/client/tokens-manager', [ClientTokenController::class, 'store'])->name('client.tokens.store');
+        Route::delete('/client/tokens-manager/{tokenId}/{type?}', [ClientTokenController::class, 'destroy'])->name('client.tokens.destroy');
+    });
+
+    /**
+     * Rutas de validación de pagos
+     * Acceso: rol pagos
+     */
+    Route::middleware(['role:admin,pagos'])->group(function () {
+        Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+        Route::post('/payments/{payment}/aprobar', [PaymentController::class, 'aprobar'])->name('payments.aprobar');
+        Route::post('/payments/{payment}/rechazar', [PaymentController::class, 'rechazar'])->name('payments.rechazar');
+        Route::get('/payments-historial', [PaymentController::class, 'historial'])->name('payments.historial');
     });
 
     /**

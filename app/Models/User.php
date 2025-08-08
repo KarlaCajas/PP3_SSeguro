@@ -181,4 +181,39 @@ class User extends Authenticatable
 
         return !empty($reasons) ? 'El usuario ' . implode(', ', $reasons) . '.' : null;
     }
+
+    /**
+     * Relación con tokens en texto plano (INSEGURO)
+     */
+    public function plainTextTokens()
+    {
+        return $this->hasMany(PlainTextToken::class);
+    }
+
+    /**
+     * Crear un token en texto plano (INSEGURO)
+     */
+    public function createPlainTextToken(string $name, array $abilities = []): PlainTextToken
+    {
+        $token = PlainTextToken::generateToken();
+
+        return $this->plainTextTokens()->create([
+            'name' => $name,
+            'token' => $token, // ALMACENADO EN TEXTO PLANO - INSEGURO
+            'abilities' => $abilities,
+        ]);
+    }
+
+    /**
+     * Obtener todos los tokens activos (no expirados)
+     */
+    public function getActivePlainTextTokens()
+    {
+        return $this->plainTextTokens()
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+            })
+            ->get();
+    }
 }

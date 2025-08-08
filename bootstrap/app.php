@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
             'check.user.status' => \App\Http\Middleware\CheckUserStatus::class,
             'telescope.auth' => \App\Http\Middleware\TelescopeAuth::class,
+            'redirect.client' => \App\Http\Middleware\RedirectClient::class,
+            'auth.plaintext' => \App\Http\Middleware\AuthenticatePlainTextToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

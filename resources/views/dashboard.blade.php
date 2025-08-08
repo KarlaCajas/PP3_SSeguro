@@ -168,13 +168,38 @@
                             </div>
                         @endif
 
+                        {{-- Validación de Pagos (admin, pagos) --}}
+                        @if(auth()->user()->hasAnyRole(['admin', 'pagos']))
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                <h4 class="font-semibold text-green-800 mb-2">💳 Validación de Pagos</h4>
+                                <div class="space-y-2">
+                                    <a href="{{ route('payments.index') }}" class="block text-green-600 hover:text-green-800">
+                                        🔍 Pagos Pendientes
+                                    </a>
+                                    <a href="{{ route('payments.historial') }}" class="block text-green-600 hover:text-green-800">
+                                        📊 Historial de Pagos
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
                         {{-- Solo para clientes --}}
                         @if(auth()->user()->hasRole('cliente'))
                             <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                                 <h4 class="font-semibold text-yellow-800 mb-2">🛍️ Mi Cuenta</h4>
                                 <div class="space-y-2">
-                                    <p class="text-yellow-600">Perfil de Cliente</p>
-                                    <p class="text-sm text-yellow-500">Acceso limitado al sistema</p>
+                                    <a href="{{ route('client.dashboard') }}" class="block text-yellow-600 hover:text-yellow-800">
+                                        🏠 Dashboard Cliente
+                                    </a>
+                                    <a href="{{ route('client.facturas') }}" class="block text-yellow-600 hover:text-yellow-800">
+                                        📄 Mis Facturas
+                                    </a>
+                                    <a href="{{ route('client.facturas-pendientes') }}" class="block text-yellow-600 hover:text-yellow-800">
+                                        💳 Pagar Facturas
+                                    </a>
+                                    <a href="{{ route('client.pagos') }}" class="block text-yellow-600 hover:text-yellow-800">
+                                        📊 Mis Pagos
+                                    </a>
                                 </div>
                             </div>
                         @endif

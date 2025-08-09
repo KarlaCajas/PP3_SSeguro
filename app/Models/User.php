@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, HasRoles, SoftDeletes, LogsActivity, HasApiTokens;
 
@@ -55,6 +56,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Accessor: Mapear is_active a status para compatibilidad con API
+     */
+    public function getStatusAttribute()
+    {
+        return $this->is_active ? 'active' : 'inactive';
+    }
+
+    /**
+     * Mutator: Mapear status a is_active para compatibilidad con API
+     */
+    public function setStatusAttribute($value)
+    {
+        $this->attributes['is_active'] = $value === 'active';
+    }
+
+    /**
      * Relación: El usuario puede tener muchas ventas (si es cajera)
      */
     public function sales(): HasMany
@@ -79,11 +96,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Alias para customerInvoices (compatibilidad con el controlador API)
+     */
+    public function invoicesAsCustomer(): HasMany
+    {
+        return $this->customerInvoices();
+    }
+
+    /**
      * Accessor: Obtener el nombre del rol principal
      */
     public function getRoleNameAttribute(): string
     {
-        return $this->roles->first()?->name ?? 'Sin rol';
+        return $this->roles->first()->name ?? 'Sin rol';
     }
 
     /**

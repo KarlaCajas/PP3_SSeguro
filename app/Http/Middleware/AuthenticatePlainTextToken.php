@@ -57,6 +57,7 @@ class AuthenticatePlainTextToken
         }
 
         // Autenticar al usuario
+        /** @var \Illuminate\Contracts\Auth\Authenticatable $user */
         auth()->login($user);
         
         // Marcar el token como usado

@@ -196,8 +196,9 @@ class PaymentController extends Controller
                 ->with(['invoice:id,invoice_number,total', 'validadoPor:id,name'])
                 ->orderBy('created_at', 'desc')
                 ->get()
-                ->map(function($payment) {
-                    return [
+                ->map(function(\App\Models\Payment $payment) {
+                    /** @var array<string, mixed> $result */
+                    $result = [
                         'id' => $payment->id,
                         'invoice_number' => $payment->invoice->invoice_number,
                         'monto' => $payment->monto,
@@ -209,6 +210,7 @@ class PaymentController extends Controller
                         'validated_at' => $payment->validated_at,
                         'validado_por' => $payment->validadoPor?->name
                     ];
+                    return $result;
                 });
 
             return response()->json([

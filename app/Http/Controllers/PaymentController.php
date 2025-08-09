@@ -67,7 +67,7 @@ class PaymentController extends Controller
             $payment->aprobar(auth()->user());
 
             return redirect()->route('payments.index')
-                ->with('success', "Pago de {$payment->getTipoPagoNombre()} por $" . number_format($payment->monto, 2) . " aprobado exitosamente");
+                ->with('success', "Pago de {$payment->getTipoPagoNombre()} por $" . number_format((float) $payment->monto, 2) . " aprobado exitosamente");
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -96,7 +96,7 @@ class PaymentController extends Controller
             $payment->rechazar(auth()->user());
 
             return redirect()->route('payments.index')
-                ->with('success', "Pago de {$payment->getTipoPagoNombre()} por $" . number_format($payment->monto, 2) . " rechazado");
+                ->with('success', "Pago de {$payment->getTipoPagoNombre()} por $" . number_format((float) $payment->monto, 2) . " rechazado");
 
         } catch (\Exception $e) {
             return redirect()->back()

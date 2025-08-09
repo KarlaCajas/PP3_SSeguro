@@ -1,0 +1,31 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+
+    # Rule level (0-9, higher is stricter)
+    level: 5
+
+    # Ignore patterns
+    ignoreErrors:
+        # Common Laravel patterns that are safe to ignore
+        - '#Access to an undefined property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9_]+#'
+        - '#Parameter \#1 \$view of function view expects view-string\|null, string given#'
+        - '#Offset .* on array.* on left side of \?\? always exists and is not nullable#'
+        - '#PHPDoc type array<int, string> of property .* is not covariant with PHPDoc type list<string>#'
+        - '#Call to function method_exists\(\) .* will always evaluate to true#'
+        
+    # Laravel specific configuration
+    checkModelProperties: true
+    
+    # Bootstrap files for better analysis
+    bootstrapFiles:
+        - bootstrap/app.php
+        
+    # Exclude patterns
+    excludePaths:
+        - bootstrap/cache/*
+        - storage/*
+        - vendor/*

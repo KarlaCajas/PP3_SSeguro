@@ -31,6 +31,13 @@ class Invoice extends Model
     ];
 
     /**
+     * Valores por defecto para los atributos
+     */
+    protected $attributes = [
+        'status' => 'pending',
+    ];
+
+    /**
      * Conversión de tipos para los campos
      */
     protected $casts = [
@@ -63,7 +70,7 @@ class Invoice extends Model
     {
         $date = now()->format('Ymd');
         $sequence = static::whereDate('created_at', now())->count() + 1;
-        return "FAC-{$date}-" . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        return "FAC-{$date}-" . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -112,6 +119,22 @@ class Invoice extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope: Facturas pendientes de pago
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope: Facturas pagadas
+     */
+    public function scopePaid($query)
+    {
+        return $query->where('status', 'paid');
     }
 
     /**

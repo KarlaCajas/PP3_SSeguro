@@ -20,6 +20,8 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search', '');
+        $status = $request->get('status', '');
+        $date = $request->get('date', '');
         $perPage = $request->get('per_page', 15);
         
         // Validar que per_page esté en los valores permitidos
@@ -28,6 +30,16 @@ class InvoiceController extends Controller
         }
 
         $query = Invoice::with(['user', 'customer', 'items']);
+
+        // Aplicar filtro de estado
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Aplicar filtro de fecha
+        if ($date) {
+            $query->whereDate('created_at', $date);
+        }
 
         // Aplicar filtro de búsqueda
         if ($search) {
@@ -50,7 +62,7 @@ class InvoiceController extends Controller
         // Mantener parámetros de búsqueda en la paginación
         $invoices->appends($request->query());
 
-        return view('invoices.index', compact('invoices', 'search', 'perPage'));
+        return view('invoices.index', compact('invoices', 'search', 'status', 'date', 'perPage'));
     }
 
     /**
@@ -127,6 +139,7 @@ class InvoiceController extends Controller
                 'subtotal' => $subtotal,
                 'tax' => $totalTax,
                 'total' => $subtotal + $totalTax,
+                'status' => 'pending', // Establecer explícitamente como pendiente
             ]);
 
             // Crear items y actualizar stock

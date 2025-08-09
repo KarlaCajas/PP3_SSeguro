@@ -43,6 +43,8 @@
                                 <select name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                                     <option value="">Todos</option>
                                     <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Activas</option>
+                                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pendientes</option>
+                                    <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Pagadas</option>
                                     <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Canceladas</option>
                                 </select>
                             </div>
@@ -120,15 +122,32 @@
                                             ${{ number_format($invoice->total, 2) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($invoice->status === 'active')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                    Activa
-                                                </span>
-                                            @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                    Cancelada
-                                                </span>
-                                            @endif
+                                            @switch($invoice->status)
+                                                @case('active')
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        Activa
+                                                    </span>
+                                                    @break
+                                                @case('pending')
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                        Pendiente
+                                                    </span>
+                                                    @break
+                                                @case('paid')
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                        Pagada
+                                                    </span>
+                                                    @break
+                                                @case('cancelled')
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                        Cancelada
+                                                    </span>
+                                                    @break
+                                                @default
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                        {{ ucfirst($invoice->status) }}
+                                                    </span>
+                                            @endswitch
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ $invoice->created_at->format('d/m/Y H:i') }}

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name'); // Nombre del token
-            $table->text('token'); // Token en texto plano - INSEGURO
+            $table->string('token', 500); // Token en texto plano - cambiar a string con longitud específica
             $table->text('abilities')->nullable(); // Habilidades del token
             $table->timestamp('last_used_at')->nullable();
             $table->timestamp('expires_at')->nullable();

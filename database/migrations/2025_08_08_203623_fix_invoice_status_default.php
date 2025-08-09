@@ -12,8 +12,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Primero, actualizar las facturas existentes que tengan status 'cancelled' sin razón válida
+        DB::table('invoices')
+            ->where('status', 'cancelled')
+            ->whereNull('cancellation_reason')
+            ->update(['status' => 'pending']);
+
+        // Luego, modificar la tabla para establecer 'pending' como valor por defecto
         Schema::table('invoices', function (Blueprint $table) {
-            // Modificar la columna status para incluir los nuevos valores y establecer 'pending' como default
             $table->enum('status', ['active', 'pending', 'paid', 'cancelled'])->default('pending')->change();
         });
     }
@@ -24,8 +30,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            // Revertir a los valores originales del enum
-            $table->enum('status', ['active', 'cancelled'])->default('active')->change();
+            $table->enum('status', ['active', 'pending', 'paid', 'cancelled'])->default('active')->change();
         });
     }
 };

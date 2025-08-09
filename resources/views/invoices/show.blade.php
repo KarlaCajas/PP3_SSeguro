@@ -5,6 +5,11 @@
                 {{ __('Factura') }} {{ $invoice->invoice_number }}
             </h2>
             <div class="flex space-x-2">
+                @if($invoice->status === 'pending')
+                    <button onclick="openPaymentModal()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                        💳 Realizar Pago
+                    </button>
+                @endif
                 @if($invoice->isActive() && $invoice->created_at->isToday())
                     <a href="{{ route('invoices.edit', $invoice) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                         Editar
@@ -57,15 +62,32 @@
                                 <h1 class="text-3xl font-bold text-gray-900">FACTURA</h1>
                                 <p class="text-lg mt-2 font-mono">{{ $invoice->invoice_number }}</p>
                                 <div class="mt-4 flex items-center space-x-4">
-                                    @if($invoice->status === 'active')
-                                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            ✓ ACTIVA
-                                        </span>
-                                    @else
-                                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                            ✕ CANCELADA
-                                        </span>
-                                    @endif
+                                    @switch($invoice->status)
+                                        @case('pending')
+                                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                ⏳ PENDIENTE
+                                            </span>
+                                            @break
+                                        @case('paid')
+                                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                ✓ PAGADA
+                                            </span>
+                                            @break
+                                        @case('active')
+                                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                ✓ ACTIVA
+                                            </span>
+                                            @break
+                                        @case('cancelled')
+                                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                ✕ CANCELADA
+                                            </span>
+                                            @break
+                                        @default
+                                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                {{ ucfirst($invoice->status) }}
+                                            </span>
+                                    @endswitch
                                     
                                     @if($invoice->created_at->isToday())
                                         <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -375,4 +397,172 @@
             }
         }
     </style>
+
+    <!-- Modal de Pago -->
+    <div id="paymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Realizar Pago
+                    </h3>
+                    <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                        <p class="text-sm text-blue-800">
+                            <strong>Factura:</strong> {{ $invoice->invoice_number }}<br>
+                            <strong>Total a Pagar:</strong> ${{ number_format($invoice->total, 2) }}
+                        </p>
+                    </div>
+
+                    <form id="paymentForm">
+                        @csrf
+                        <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
+                        
+                        <div class="mb-4">
+                            <label for="tipo_pago" class="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+                            <select name="tipo_pago" id="tipo_pago" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                <option value="">Seleccionar método</option>
+                                <option value="efectivo">💵 Efectivo</option>
+                                <option value="tarjeta">💳 Tarjeta</option>
+                                <option value="transferencia">🏦 Transferencia</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="monto" class="block text-sm font-medium text-gray-700 mb-2">Monto</label>
+                            <input type="number" name="monto" id="monto" step="0.01" 
+                                   value="{{ $invoice->total }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                                   required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="numero_transaccion" class="block text-sm font-medium text-gray-700 mb-2">Número de Transacción</label>
+                            <input type="text" name="numero_transaccion" id="numero_transaccion" 
+                                   placeholder="TXN123456789" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                                   required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="observacion" class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
+                            <textarea name="observacion" id="observacion" rows="3" 
+                                      placeholder="Pago completo de la factura {{ $invoice->invoice_number }}" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-3">
+                            <button type="button" onclick="closePaymentModal()" 
+                                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200">
+                                Cancelar
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Procesar Pago
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openPaymentModal() {
+            document.getElementById('paymentModal').classList.remove('hidden');
+            
+            // Generar número de transacción automático
+            const timestamp = Date.now();
+            const randomNum = Math.floor(Math.random() * 1000);
+            document.getElementById('numero_transaccion').value = `TXN${timestamp}${randomNum}`;
+            
+            // Focus en el primer campo
+            document.getElementById('tipo_pago').focus();
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+            // Limpiar formulario
+            document.getElementById('paymentForm').reset();
+            document.getElementById('monto').value = {{ $invoice->total }};
+        }
+
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closePaymentModal();
+            }
+        });
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('paymentModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closePaymentModal();
+            }
+        });
+
+        // Manejar envío del formulario
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Mostrar indicador de carga
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Procesando...
+            `;
+            submitBtn.disabled = true;
+
+            // Hacer la petición a la API
+            fetch('/api/v2/pagos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer cliente_api_token_205922', // Aquí podrías usar un token dinámico
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Éxito
+                alert('¡Pago procesado exitosamente! La página se recargará.');
+                closePaymentModal();
+                location.reload(); // Recargar para mostrar el nuevo estado
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar el pago: ' + (error.message || 'Error desconocido'));
+                
+                // Restaurar botón
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
 </x-app-layout>

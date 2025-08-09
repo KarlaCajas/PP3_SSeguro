@@ -292,7 +292,7 @@ class UserController extends Controller
         }
 
         // Verificar si el usuario tiene ventas o facturas registradas
-        if (($user->sales && $user->sales->count() > 0) || ($user->invoices && $user->invoices->count() > 0)) {
+        if ($user->sales->count() > 0 || $user->invoices->count() > 0) {
             return back()->withErrors(['error' => 'No se puede eliminar permanentemente un usuario que tiene ventas o facturas registradas']);
         }
 

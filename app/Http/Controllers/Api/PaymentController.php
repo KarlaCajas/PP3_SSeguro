@@ -15,6 +15,54 @@ use Illuminate\Validation\Rule;
 class PaymentController extends Controller
 {
     /**
+     * Listar todos los pagos (Solo admin y ventas)
+     */
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            $perPage = $request->get('per_page', 15);
+            
+            $pagos = Payment::with(['invoice:id,invoice_number,total', 'validadoPor:id,name'])
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pagos obtenidos exitosamente',
+                'data' => $pagos
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los pagos',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mostrar un pago específico (Solo admin y ventas)
+     */
+    public function show(Payment $pago): JsonResponse
+    {
+        try {
+            $pago->load(['invoice.items.product', 'validadoPor']);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Pago obtenido exitosamente',
+                'data' => $pago
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el pago',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Registrar un nuevo pago (API REST - Sanctum)
      */
     public function store(Request $request): JsonResponse

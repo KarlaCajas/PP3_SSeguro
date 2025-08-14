@@ -52,6 +52,12 @@ Route::middleware('auth.plaintext')->prefix('v2')->group(function () {
     Route::post('/pagos', [PaymentController::class, 'store']);
     Route::get('/mis-pagos', [PaymentController::class, 'getHistorialPagos']);
     
+    // === PAGOS - GESTIÓN ADMINISTRATIVA (Solo admin y ventas) ===
+    Route::middleware('role:admin,ventas')->group(function () {
+        Route::get('/pagos', [PaymentController::class, 'index']);
+        Route::get('/pagos/{pago}', [PaymentController::class, 'show']);
+    });
+    
     // === CLIENTES (Solo admin y ventas) ===
     Route::middleware('role:admin,ventas')->group(function () {
         Route::apiResource('clientes', ClientController::class);

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente API - Sistema de Facturas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .auth-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .auth-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .auth-form input, .auth-form select, .auth-form button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .auth-form input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #1e7e34; }
+        
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #bd2130; }
+        
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #d39e00; }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .data-grid {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        @media (max-width: 768px) {
+            .auth-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            .tab {
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Cliente API - Sistema de Facturas</h1>
+            <p>Interfaz para consumir la API REST del Sistema de Facturas Laravel</p>
+        </div>
+
+        <div class="auth-section">
+            <div class="auth-form">
+                <input type="text" id="apiToken" placeholder="Token de API (ej: admin-test-token)" value="admin-test-token">
+                <select id="apiVersion">
+                    <option value="v1">API v1 (Sanctum)</option>
+                    <option value="v2" selected>API v2 (PlainText)</option>
+                </select>
+                <input type="text" id="baseUrl" placeholder="URL Base" value="http://127.0.0.1:8000">
+                <button class="btn btn-success" onclick="testConnection()">🔗 Probar Conexión</button>
+                <button class="btn btn-warning" onclick="clearStatus()">🗑️ Limpiar</button>
+            </div>
+            <div id="connectionStatus"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('productos')">📦 Productos</button>
+                <button class="tab" onclick="showTab('categorias')">📂 Categorías</button>
+                <button class="tab" onclick="showTab('clientes')">👥 Clientes</button>
+                <button class="tab" onclick="showTab('facturas')">🧾 Facturas</button>
+                <button class="tab" onclick="showTab('pagos')">💳 Pagos</button>
+                <button class="tab" onclick="showTab('mis-facturas')">📋 Mis Facturas</button>
+            </div>
+
+            <!-- Tab Productos -->
+            <div id="productos" class="tab-content active">
+                <div class="card">
+                    <h3>📦 Gestión de Productos</h3>
+                    <button class="btn" onclick="getProductos()">📥 Cargar Productos</button>
+                    <button class="btn btn-success" onclick="showCreateProductModal()">➕ Crear Producto</button>
+                    <div id="productosResult"></div>
+                </div>
+            </div>
+
+            <!-- Tab Categorías -->
+            <div id="categorias" class="tab-content">
+                <div class="card">
+                    <h3>📂 Gestión de Categorías</h3>
+                    <button class="btn" onclick="getCategorias()">📥 Cargar Categorías</button>
+                    <div id="categoriasResult"></div>
+                </div>
+            </div>
+
+            <!-- Tab Clientes -->
+            <div id="clientes" class="tab-content">
+                <div class="card">
+                    <h3>👥 Gestión de Clientes</h3>
+                    <button class="btn" onclick="getClientes()">📥 Cargar Clientes</button>
+                    <button class="btn btn-success" onclick="showCreateClientModal()">➕ Crear Cliente</button>
+                    <div id="clientesResult"></div>
+                </div>
+            </div>
+
+            <!-- Tab Facturas -->
+            <div id="facturas" class="tab-content">
+                <div class="card">
+                    <h3>🧾 Gestión de Facturas</h3>
+                    <button class="btn" onclick="getFacturas()">📥 Cargar Facturas</button>
+                    <button class="btn btn-success" onclick="showCreateInvoiceModal()">➕ Crear Factura</button>
+                    <div id="facturasResult"></div>
+                </div>
+            </div>
+
+            <!-- Tab Pagos -->
+            <div id="pagos" class="tab-content">
+                <div class="card">
+                    <h3>💳 Gestión de Pagos</h3>
+                    <button class="btn" onclick="getPagos()">📥 Cargar Pagos</button>
+                    <div id="pagosResult"></div>
+                </div>
+            </div>
+
+            <!-- Tab Mis Facturas (Cliente) -->
+            <div id="mis-facturas" class="tab-content">
+                <div class="card">
+                    <h3>📋 Mis Facturas (Vista de Cliente)</h3>
+                    <p><strong>Nota:</strong> Use el token de cliente: <code>cliente-test-token-1</code></p>
+                    <button class="btn" onclick="getMisFacturas()">📥 Ver Mis Facturas</button>
+                    <div id="misFacturasResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear/editar -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+</body>
+</html>
